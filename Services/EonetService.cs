@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EonetApp.Clients;
-using EonetApp.Models;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace EonetApp.Services
 {
+    using Clients;
+    using Models;
+
     public class EonetService : IEonetService
     {
         private readonly IEonetTrackerClient _eonetTrackerClient;

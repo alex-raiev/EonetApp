@@ -1,21 +1,28 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using EonetApp.Clients;
-using EonetApp.Configuration;
-using EonetApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 using Microsoft.OpenApi.Models;
 
 namespace EonetApp
 {
+    using Clients;
+    using Configuration;
+    using Services;
+    using Models;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -27,6 +34,14 @@ namespace EonetApp
 
         public void ConfigureServices(IServiceCollection services)
         {
+            IEdmModel GetModel()
+            {
+                var odataBuilder = new ODataConventionModelBuilder();
+                odataBuilder.EntitySet<Event>("Event");
+
+                return odataBuilder.GetEdmModel();
+            }
+
             services.Configure<UrlsConfiguration>(Configuration.GetSection("Urls"));
             services.Configure<UrlsConfiguration>(Configuration.GetSection("Redis"));
             
@@ -35,7 +50,8 @@ namespace EonetApp
                 {
                     opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                     opt.JsonSerializerOptions.IgnoreNullValues = true;
-                });
+                })
+                .AddOData(options => options.AddModel("odata", GetModel()).Filter().Select().Expand());
             
             services.AddSwaggerGen(c =>
             {
@@ -47,11 +63,8 @@ namespace EonetApp
 
                 c.IncludeXmlComments(commentsXmlPath);
             });
-
-            services.AddMemoryCache(options =>
-            {
-                
-            });
+            
+            services.AddMemoryCache();
 
             services.AddScoped<IEonetService, EonetService>()
                 .AddScoped<IEonetTrackerClient, EonetTrackerClient>();

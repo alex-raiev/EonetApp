@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using EonetApp.Models;
+﻿using System.Threading.Tasks;
 
 namespace EonetApp.Clients
 {
+    using Models;
+
     public interface IEonetTrackerClient
     {
         Task<EventList> GetAllEvents();

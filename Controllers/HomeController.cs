@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using EonetApp.Models;
-using EonetApp.Services;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace EonetApp.Controllers
 {
+    using Models;
+    using Services;
+
     [Route("api/v1/eonet")]
     [ApiController]
     public class HomeController : ControllerBase
@@ -19,17 +20,20 @@ namespace EonetApp.Controllers
         {
             _eonetService = eonetService;
         }
+
         /// <summary>
         /// Get all events from EONET API
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(typeof(EventList), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<Event>), StatusCodes.Status200OK)]
         [Route("all")]
-        public async Task<IActionResult> GetAll()
+        [EnableQuery()]
+        public async Task<IQueryable<Event>> GetAll()
         {
-            return Ok(await _eonetService.GetAll());
+            var list = await _eonetService.GetAll();
+            return list.Events;
         }
 
         /// <summary>
