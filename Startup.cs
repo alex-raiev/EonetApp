@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -51,7 +52,7 @@ namespace EonetApp
                     opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                     opt.JsonSerializerOptions.IgnoreNullValues = true;
                 })
-                .AddOData(options => options.AddModel("odata", GetModel()).Filter().Select().Expand());
+                .AddOData(options => options.AddModel("odata", GetModel()).Filter().OrderBy().Select().Expand());
             
             services.AddSwaggerGen(c =>
             {
@@ -63,7 +64,17 @@ namespace EonetApp
 
                 c.IncludeXmlComments(commentsXmlPath);
             });
-            
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("allowAll", policy =>
+                {
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowAnyOrigin();
+                });
+            });
+
             services.AddMemoryCache();
 
             services.AddScoped<IEonetService, EonetService>()
@@ -82,10 +93,13 @@ namespace EonetApp
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseCors("allowAll");
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
+            CultureInfo[] supportedCultures = new[] { new CultureInfo("en-US") };
+
+            app.UseRequestLocalization(new RequestLocalizationOptions() { SupportedCultures = supportedCultures, SupportedUICultures = supportedCultures })
+                .UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });

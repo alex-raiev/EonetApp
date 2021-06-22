@@ -1,11 +1,13 @@
-﻿using System.Threading.Tasks;
-using EonetApp.Models;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace EonetApp.Services
 {
+    using Models;
+
     public interface IEonetService
     {
-        Task<EventList> GetAll();
+        Task<IEnumerable<Event>> GetAll();
         Task<Event> GetById(string id);
     }
 }

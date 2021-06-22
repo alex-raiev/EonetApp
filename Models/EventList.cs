@@ -11,6 +11,6 @@ namespace EonetApp.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public string Link { get; set; }
-        public IQueryable<Event> Events { get; set; }
+        public IEnumerable<Event> Events { get; set; }
     }
 }

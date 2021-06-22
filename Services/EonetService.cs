@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
@@ -12,40 +13,47 @@ namespace EonetApp.Services
     {
         private readonly IEonetTrackerClient _eonetTrackerClient;
         private readonly IMemoryCache _memoryCache;
+        private readonly MemoryCacheEntryOptions _cachingOptions;
+
+        const string cacheEntityKey = "eonet_list";
 
         public EonetService(IEonetTrackerClient eonetTrackerClient, IMemoryCache memoryCache)
         {
             _eonetTrackerClient = eonetTrackerClient;
             _memoryCache = memoryCache;
+
+            _cachingOptions = new MemoryCacheEntryOptions
+            {
+                Priority = CacheItemPriority.Normal,
+                AbsoluteExpiration = DateTimeOffset.Now.AddDays(1),
+                SlidingExpiration = TimeSpan.FromMinutes(5)
+            };
         }
 
-        public async Task<EventList> GetAll()
+        public async Task<IEnumerable<Event>> GetAll()
         {
-            return await _eonetTrackerClient.GetAllEvents();
+            return await GetList();
         }
 
         public async Task<Event> GetById(string id)
         {
-            if (!_memoryCache.TryGetValue(id, out Event @event))
+            var list = await GetList();
+
+            return list.SingleOrDefault(e => e.Id == id);
+        }
+
+        private async Task<IEnumerable<Event>> GetList()
+        {
+            if (!_memoryCache.TryGetValue(cacheEntityKey, out IEnumerable<Event> eventList))
             {
-                var events = await _eonetTrackerClient.GetAllEvents();
+                var list = await _eonetTrackerClient.GetAllEvents();
 
-                var cachingOptions = new MemoryCacheEntryOptions
-                {
-                    Priority = CacheItemPriority.Normal,
-                    AbsoluteExpiration = DateTimeOffset.Now.AddDays(1),
-                    SlidingExpiration = TimeSpan.FromMinutes(5)
-                };
+                eventList = list.Events;
 
-                if (@event == null)
-                {
-                    @event = events.Events.SingleOrDefault(x => x.Id == id);
-                }
-                
-                _memoryCache.Set(id, @event);
+                _memoryCache.Set(cacheEntityKey, eventList);
             }
 
-            return @event;
+            return eventList;
         }
     }
 }

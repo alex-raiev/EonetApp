@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -30,10 +29,9 @@ namespace EonetApp.Controllers
         [ProducesResponseType(typeof(List<Event>), StatusCodes.Status200OK)]
         [Route("all")]
         [EnableQuery()]
-        public async Task<IQueryable<Event>> GetAll()
+        public async Task<IEnumerable<Event>> GetAll()
         {
-            var list = await _eonetService.GetAll();
-            return list.Events;
+            return await _eonetService.GetAll();
         }
 
         /// <summary>
