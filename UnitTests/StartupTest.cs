@@ -18,7 +18,7 @@ namespace UnitTests
         private readonly IServiceCollection _services;
         private readonly Startup _startup;
 
-        private StartupTest()
+        public StartupTest()
         {
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -11,21 +10,21 @@ namespace EonetApp.Clients
 
     public class EonetTrackerClient : IEonetTrackerClient
     {
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly UrlsConfiguration _configuration;
 
-        public EonetTrackerClient(IOptions<UrlsConfiguration> configuration)
+        public EonetTrackerClient(IHttpClientFactory httpClientFactory, IOptions<UrlsConfiguration> configuration)
         {
+            _httpClientFactory = httpClientFactory;
             _configuration = configuration.Value;
         }
 
         public async Task<EventList> GetAllEvents()
         {
-            var requestUri = new Uri(_configuration.EonetUrl);
-            using var httpClient = new HttpClient();
-
-            var response = await httpClient.GetAsync(requestUri);
+            var httpClient = _httpClientFactory.CreateClient();
+            var response = await httpClient.GetAsync(_configuration.EonetUrl);
             response.EnsureSuccessStatusCode();
-            
+
             return await response.Content.ReadFromJsonAsync<EventList>();
         }
     }

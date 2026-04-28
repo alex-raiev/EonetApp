@@ -44,7 +44,7 @@ namespace EonetApp
             }
 
             services.Configure<UrlsConfiguration>(Configuration.GetSection("Urls"));
-            services.Configure<UrlsConfiguration>(Configuration.GetSection("Redis"));
+            services.Configure<CacheConfiguration>(Configuration.GetSection("Redis"));
             
             services.AddControllers()
                 .AddJsonOptions(opt =>
@@ -76,6 +76,7 @@ namespace EonetApp
             });
 
             services.AddMemoryCache();
+            services.AddHttpClient();
 
             services.AddScoped<IEonetService, EonetService>()
                 .AddScoped<IEonetTrackerClient, EonetTrackerClient>();
